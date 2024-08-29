@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">park-for-kids</string>
+    <string name="main_name">ParKids</string>
+    <string name="baseline_name">Trouvez un parc pour enfants près de chez vous</string>
+    <string name="main_open_button">EXPLORER</string>
+
 </resources>
