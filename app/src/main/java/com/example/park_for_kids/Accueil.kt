@@ -1,14 +1,11 @@
 package com.example.park_for_kids
 
-import android.media.Image
-import androidx.compose.animation.expandHorizontally
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -18,7 +15,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 
 @Composable
-fun Accueil(navComposable: NavController){
+fun Accueil(navController: NavController){
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -30,7 +27,7 @@ fun Accueil(navComposable: NavController){
         Text(text = "Trouvez un parc pour enfants près de chez vous")
 
         Button(onClick = {
-            navComposable.navigate(Routes.Home,)
+            navController.navigate(Routes.Home)
         }) {
             Text(text = "EXPLORER")
         }

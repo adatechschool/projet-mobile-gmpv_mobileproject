@@ -19,7 +19,11 @@ class MainActivity : ComponentActivity() {
                     Accueil(navController)
                 }
                 composable(Routes.Home,){
+<<<<<<< Updated upstream
                     Home(navController = navController)
+=======
+                    Home(navComposable = navController)
+>>>>>>> Stashed changes
                 }
             })
 
