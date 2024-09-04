@@ -15,15 +15,11 @@ class MainActivity : ComponentActivity() {
         setContent {
             val navController = rememberNavController()
             NavHost(navController = navController, startDestination = Routes.Accueil, builder = {
-                composable(Routes.Accueil,){
+                composable(Routes.Accueil){
                     Accueil(navController)
                 }
-                composable(Routes.Home,){
-<<<<<<< Updated upstream
+                composable(Routes.Home){
                     Home(navController = navController)
-=======
-                    Home(navComposable = navController)
->>>>>>> Stashed changes
                 }
             })
 
