@@ -70,6 +70,10 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
-    val nav_version = "2.7.7"
-    implementation("androidx.navigation:navigation-compose:$nav_version")
+    implementation(libs.retrofit2.retrofit)
+    implementation(libs.converter.gson)
+    implementation(libs.logging.interceptor)
+
+//    val nav_version = "2.7.7"
+    implementation(libs.androidx.navigation.compose)
 }
