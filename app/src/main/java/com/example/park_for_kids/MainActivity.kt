@@ -18,23 +18,32 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             park_for_kidsTheme {
-                ParkForKidsApp()
+                Navigation()
             }
         }
     }
 }
 
 @Composable
-fun ParkForKidsApp() {
-    park_for_kidsTheme {
-        Surface(
-            color = MaterialTheme.colorScheme.background
-        ) {
-            val navController = rememberNavController()
-            NavHost(navController = navController, startDestination = "home") {
-                composable("home") { Home() }  // Navigation vers l'écran Home
+fun Navigation() {
+    val navController = rememberNavController()
+
+    // NavHost définit les différentes routes de navigation
+    NavHost(navController = navController, startDestination = Routes.Accueil) {
+        // Page principale (Home)
+        composable(Routes.Accueil) {
+            Accueil(navController = navController)
+        }
+        // Page Home
+        composable(Routes.Home) {
+            Home(navController = navController)
+        }
+        // Page PlaygroundDetails
+        composable(Routes.PlaygroundDetails) { backStackEntry ->
+            val osmId = backStackEntry.arguments?.getString("osmId")
+            osmId?.let {
+                PlaygroundDetailsScreen(navController = navController, playgroundId = it)
             }
         }
     }
 }
-

@@ -11,6 +11,7 @@ import java.net.URLEncoder
 class HomeViewModel : ViewModel() {
     var searchQuery = mutableStateOf("")
     var playgrounds = mutableStateOf<List<PlaygroundResponse.Playground>>(emptyList())
+    var totalCount = mutableStateOf<Int?>(null)
     var isLoading = mutableStateOf(false)
     var errorMessage = mutableStateOf<String?>(null)
 
@@ -26,6 +27,8 @@ class HomeViewModel : ViewModel() {
                 val query = formatQuery(searchQuery.value)
                 val response = apiService.getPlaygrounds(query)
 
+                // On récuère le nombre de parcs de la ville
+                totalCount.value = response.total_count
                 // On récupère la liste des résultats dans 'results'
                 playgrounds.value = response.results
             } catch (e: Exception) {

@@ -1,5 +1,6 @@
 package com.example.park_for_kids
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,16 +19,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.park_for_kids.data.model.HomeViewModel
 import com.example.park_for_kids.network.PlaygroundResponse
 
 @Composable
-fun Home(){
+fun Home(navController: NavController){
     // Obtenez une instance du ViewModel
     val viewModel: HomeViewModel = viewModel()
     val searchQuery = viewModel.searchQuery.value
     val playgrounds = viewModel.playgrounds.value
+    val totalCount = viewModel.totalCount.value
     val isLoading = viewModel.isLoading.value
     val errorMessage = viewModel.errorMessage.value
 
@@ -36,7 +41,7 @@ fun Home(){
         OutlinedTextField(
             value = searchQuery,
             onValueChange = { viewModel.searchQuery.value = it },
-            label = { Text("Rechercher par ville, code postal, département ou région") },
+            label = { Text("Recherchez par ville") },
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(8.dp))
@@ -54,34 +59,45 @@ fun Home(){
         } else if (errorMessage != null) {
             Text("Erreur: $errorMessage", color = MaterialTheme.colorScheme.error)
         } else {
-            PlaygroundList(playgrounds)  // Affichage de la liste des aires de jeux
+            // Afficher le nombre total de parcs
+            if (totalCount != null) {
+                Text("Nombre total de parcs : $totalCount", style = MaterialTheme.typography.bodyLarge)
+            }
+            PlaygroundList(playgrounds, navController)  // Affichage de la liste des aires de jeux
         }
     }
 }
 
 
 @Composable
-fun PlaygroundList(playgrounds: List<PlaygroundResponse.Playground>) {
+fun PlaygroundList(playgrounds: List<PlaygroundResponse.Playground>, navController: NavController) {
     LazyColumn {
         items(playgrounds) { playground ->
-            PlaygroundItem(playground)
+            PlaygroundItem(playground, navController)
         }
     }
 }
 
 @Composable
-fun PlaygroundItem(playground: PlaygroundResponse.Playground) {
+fun PlaygroundItem(playground: PlaygroundResponse.Playground, navController: NavController) {
     Column(modifier = Modifier.padding(8.dp)) {
-        Text("Nom: ${playground.name ?: "Non disponible"}", style = MaterialTheme.typography.bodyLarge)
-        Text("Ville: ${playground.meta_name_com}", style = MaterialTheme.typography.bodyMedium)
-        Text("Code Postal: ${playground.meta_code_com}", style = MaterialTheme.typography.bodyMedium)
-        Text("Département: ${playground.meta_name_dep}", style = MaterialTheme.typography.bodyMedium)
-        Text("Région: ${playground.meta_name_reg}", style = MaterialTheme.typography.bodyMedium)
-
-        // Afficher les coordonnées géographiques si elles sont disponibles
-        playground.meta_geo_point?.let { geoPoint ->
-            Text("Longitude: ${geoPoint.lon}, Latitude: ${geoPoint.lat}", style = MaterialTheme.typography.bodyMedium)
+        Text("Nom: ${playground.name ?: "Non disponible"}",
+        style = MaterialTheme.typography.bodyLarge,
+        modifier = Modifier.clickable {
+            // Naviguer vers la page des détails avec l 'ID du parc
+            playground.meta_osm_id?.let { osmId ->
+                navController.navigate("playgroundDetails/$osmId")
         }
+    }
+        )
+        Text("Ville: ${playground.meta_name_com}", style = MaterialTheme.typography.bodyMedium)
+//        Text("Département: ${playground.meta_name_dep}", style = MaterialTheme.typography.bodyMedium)
+//        Text("Région: ${playground.meta_name_reg}", style = MaterialTheme.typography.bodyMedium)
+
+//         Afficher les coordonnées géographiques si elles sont disponibles
+//        playground.meta_geo_point?.let { geoPoint ->
+//            Text("Longitude: ${geoPoint.lon}, Latitude: ${geoPoint.lat}", style = MaterialTheme.typography.bodyMedium)
+//        }
         HorizontalDivider()
     }
 }
@@ -91,5 +107,5 @@ fun PlaygroundItem(playground: PlaygroundResponse.Playground) {
 @Composable
 fun HomePreview(){
     val navController = rememberNavController()
-    Home()
+    Home(navController)
 }

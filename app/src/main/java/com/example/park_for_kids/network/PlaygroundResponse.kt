@@ -13,7 +13,6 @@ data class PlaygroundResponse(
         val max_age: Int?,
         val opening_hours: String?,
         val meta_name_com: String,  // Ville
-        val meta_code_com: String,  // Code postal
         val meta_name_dep: String,  // Département
         val meta_code_dep: String,  // Code Département
         val meta_name_reg: String,  // Région
