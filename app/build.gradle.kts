@@ -79,5 +79,9 @@ dependencies {
 
 //    val nav_version = "2.7.7"
     implementation(libs.androidx.navigation.compose)
+
+    // Pour avoir accès à la map OSM
+    implementation(libs.androidx.webkit)
+
     implementation(libs.kotlinx.coroutines.core)
 }
