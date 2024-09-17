@@ -103,7 +103,7 @@ fun PlaygroundDetailsScreen(navController: NavController, playgroundId: String, 
             Button(
                 onClick = { navController.popBackStack() },
                 modifier = Modifier
-                    .align(Alignment.BottomCenter)
+//                    .align(Alignment.BottomCenter)
                     .padding(30.dp)
                     .fillMaxWidth() // Remplir la largeur disponible
                     .height(48.dp) // Hauteur standard du bouton

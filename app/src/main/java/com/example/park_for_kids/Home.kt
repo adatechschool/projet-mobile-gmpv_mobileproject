@@ -39,6 +39,7 @@ import kotlinx.coroutines.withContext
 import java.util.Locale
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.text.font.FontWeight
 import com.example.park_for_kids.ui.theme.*
 
 @Composable
@@ -57,7 +58,9 @@ fun Home(navController: NavController){
             value = searchQuery,
             onValueChange = { viewModel.searchQuery.value = it },
             label = { Text("Recherchez par ville") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 16.dp)
         )
         Spacer(modifier = Modifier.height(8.dp))
         Button(
@@ -76,7 +79,10 @@ fun Home(navController: NavController){
         } else {
             // Afficher le nombre total de parcs
             if (totalCount != null) {
-                Text("Nombre total de parcs : $totalCount", style = MaterialTheme.typography.bodyLarge, color = Blue)
+                Text(
+                    "Nombre total de parcs : $totalCount",
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Bold,)
             }
             PlaygroundList(playgrounds, navController)  // Affichage de la liste des aires de jeux
         }
@@ -106,6 +112,7 @@ fun PlaygroundItem(playground: PlaygroundResponse.Playground, navController: Nav
     Column(modifier = Modifier.padding(8.dp)) {
         Text("Nom: ${playground.name ?: "Non disponible"}",
         style = MaterialTheme.typography.bodyLarge,
+        color = Secondary,
         modifier = Modifier.clickable {
             // Naviguer vers la page des détails avec l 'ID du parc
             playground.meta_osm_id?.let { osmId ->
@@ -113,11 +120,16 @@ fun PlaygroundItem(playground: PlaygroundResponse.Playground, navController: Nav
         }
     }
         )
-        Text("Ville: ${playground.meta_name_com}", style = MaterialTheme.typography.bodyMedium)
+        Text(
+            "Ville: ${playground.meta_name_com}",
+            style = MaterialTheme.typography.bodyMedium,
+            color = Secondary
+            )
         // Affiche l'adresse récupérée et permet de cliquer pour ouvrir dans Google Maps
         Text(
             text = "Adresse: $address",
             style = MaterialTheme.typography.bodyMedium,
+            color = Secondary,
             modifier = Modifier.clickable {
                 playground.meta_geo_point?.let { geoPoint ->
                     OpenInGoogleMaps(context, address)
