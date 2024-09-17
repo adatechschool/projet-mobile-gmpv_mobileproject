@@ -1,5 +1,9 @@
 package com.example.park_for_kids
 
+import android.content.Context
+import android.content.Intent
+import android.location.Geocoder
+import android.net.Uri
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -15,7 +19,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -25,6 +34,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.park_for_kids.data.model.HomeViewModel
 import com.example.park_for_kids.network.PlaygroundResponse
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.util.Locale
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import com.example.park_for_kids.ui.theme.*
 
 @Composable
 fun Home(navController: NavController){
@@ -61,7 +76,7 @@ fun Home(navController: NavController){
         } else {
             // Afficher le nombre total de parcs
             if (totalCount != null) {
-                Text("Nombre total de parcs : $totalCount", style = MaterialTheme.typography.bodyLarge)
+                Text("Nombre total de parcs : $totalCount", style = MaterialTheme.typography.bodyLarge, color = Blue)
             }
             PlaygroundList(playgrounds, navController)  // Affichage de la liste des aires de jeux
         }
@@ -80,6 +95,14 @@ fun PlaygroundList(playgrounds: List<PlaygroundResponse.Playground>, navControll
 
 @Composable
 fun PlaygroundItem(playground: PlaygroundResponse.Playground, navController: NavController) {
+    val context = LocalContext.current
+    var address by remember { mutableStateOf("Chargement...") }
+
+    // Utilisation d'une coroutine pour charger l'adresse en arrière-plan
+    LaunchedEffect(playground) {
+        playground.meta_geo_point?.let { geoPoint ->
+            address = getAddressFromCoordinates(context, geoPoint.lat, geoPoint.lon)
+        }    }
     Column(modifier = Modifier.padding(8.dp)) {
         Text("Nom: ${playground.name ?: "Non disponible"}",
         style = MaterialTheme.typography.bodyLarge,
@@ -91,21 +114,51 @@ fun PlaygroundItem(playground: PlaygroundResponse.Playground, navController: Nav
     }
         )
         Text("Ville: ${playground.meta_name_com}", style = MaterialTheme.typography.bodyMedium)
-//        Text("Département: ${playground.meta_name_dep}", style = MaterialTheme.typography.bodyMedium)
-//        Text("Région: ${playground.meta_name_reg}", style = MaterialTheme.typography.bodyMedium)
-
-//         Afficher les coordonnées géographiques si elles sont disponibles
-//        playground.meta_geo_point?.let { geoPoint ->
-//            Text("Longitude: ${geoPoint.lon}, Latitude: ${geoPoint.lat}", style = MaterialTheme.typography.bodyMedium)
-//        }
+        // Affiche l'adresse récupérée et permet de cliquer pour ouvrir dans Google Maps
+        Text(
+            text = "Adresse: $address",
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.clickable {
+                playground.meta_geo_point?.let { geoPoint ->
+                    OpenInGoogleMaps(context, address)
+                }
+            }
+        )
         HorizontalDivider()
     }
 }
 
+suspend fun getAddressFromCoordinates(context: Context, latitude: Double?, longitude: Double?): String {
+    if (latitude == null || longitude == null) return "Coordonnées non disponibles"
+
+    val geocoder = Geocoder(context, Locale.getDefault())
+    return withContext(Dispatchers.IO) {
+        try {
+            val addresses = geocoder.getFromLocation(latitude, longitude, 1)
+            if (!addresses.isNullOrEmpty()) {
+                addresses[0].getAddressLine(0) ?: "Adresse non trouvée"
+            } else {
+                "Adresse non trouvée"
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            "Erreur lors de la récupération de l'adresse"
+        }
+    }
+}
+
+fun OpenInGoogleMaps(context: Context, address: String?) {
+    if (!address.isNullOrEmpty()) {
+        val uri = Uri.parse("geo:0,0?q=${Uri.encode(address)}") // Utilisation de l'adresse pour la requête
+        val intent = Intent(Intent.ACTION_VIEW, uri)
+        intent.setPackage("com.google.android.apps.maps") // Ouvrir explicitement dans Google Maps
+        context.startActivity(intent)
+    }
+}
 
 @Preview(showBackground = true)
 @Composable
-fun HomePreview(){
+fun HomePreview() {
     val navController = rememberNavController()
     Home(navController)
 }
