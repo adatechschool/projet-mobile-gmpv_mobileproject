@@ -27,10 +27,15 @@ class HomeViewModel : ViewModel() {
                 val query = formatQuery(searchQuery.value)
                 val response = apiService.getPlaygrounds(query)
 
+                println("API Response: $response")
+
                 // On récuère le nombre de parcs de la ville
                 totalCount.value = response.total_count
                 // On récupère la liste des résultats dans 'results'
                 playgrounds.value = response.results
+
+                println("Total count: ${response.total_count}, Playgrounds: ${response.results}")
+
             } catch (e: Exception) {
                 errorMessage.value = "Erreur: ${e.localizedMessage}"
             } finally {

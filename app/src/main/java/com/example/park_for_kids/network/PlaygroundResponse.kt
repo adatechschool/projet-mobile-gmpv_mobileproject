@@ -14,9 +14,9 @@ data class PlaygroundResponse(
         val opening_hours: String?,
         val meta_name_com: String,  // Ville
         val meta_name_dep: String,  // Département
-        val meta_code_dep: String,  // Code Département
+        val meta_code_dep: String?,  // Code Département
         val meta_name_reg: String,  // Région
-        val meta_code_reg: String,  // Code Région
+        val meta_code_reg: String?,  // Code Région
         val meta_geo_point: MetaGeoPoint?,  // Coordonnées géographiques (lat, lon)
         val meta_osm_id: String?,
         val meta_osm_url: String?
