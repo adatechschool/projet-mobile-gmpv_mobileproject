@@ -41,6 +41,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.font.FontWeight
 import com.example.park_for_kids.ui.theme.*
+import com.example.park_for_kids.ui.theme.components.getAddressFromCoordinates
+import com.example.park_for_kids.ui.theme.components.openInGoogleMaps
 
 @Composable
 fun Home(navController: NavController){
@@ -132,39 +134,11 @@ fun PlaygroundItem(playground: PlaygroundResponse.Playground, navController: Nav
             color = Secondary,
             modifier = Modifier.clickable {
                 playground.meta_geo_point?.let { geoPoint ->
-                    OpenInGoogleMaps(context, address)
+                    openInGoogleMaps(context, address)
                 }
             }
         )
         HorizontalDivider()
-    }
-}
-
-suspend fun getAddressFromCoordinates(context: Context, latitude: Double?, longitude: Double?): String {
-    if (latitude == null || longitude == null) return "Coordonnées non disponibles"
-
-    val geocoder = Geocoder(context, Locale.getDefault())
-    return withContext(Dispatchers.IO) {
-        try {
-            val addresses = geocoder.getFromLocation(latitude, longitude, 1)
-            if (!addresses.isNullOrEmpty()) {
-                addresses[0].getAddressLine(0) ?: "Adresse non trouvée"
-            } else {
-                "Adresse non trouvée"
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            "Erreur lors de la récupération de l'adresse"
-        }
-    }
-}
-
-fun OpenInGoogleMaps(context: Context, address: String?) {
-    if (!address.isNullOrEmpty()) {
-        val uri = Uri.parse("geo:0,0?q=${Uri.encode(address)}") // Utilisation de l'adresse pour la requête
-        val intent = Intent(Intent.ACTION_VIEW, uri)
-        intent.setPackage("com.google.android.apps.maps") // Ouvrir explicitement dans Google Maps
-        context.startActivity(intent)
     }
 }
 
