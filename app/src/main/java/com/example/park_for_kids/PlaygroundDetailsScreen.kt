@@ -1,37 +1,37 @@
 package com.example.park_for_kids
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.material3.Button
-import androidx.compose.material3.Text
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import androidx.compose.runtime.Composable
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
-import com.example.park_for_kids.data.model.OneParkViewModel
+import android.Manifest
+import android.app.Activity
+import android.content.pm.PackageManager
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.collectAsState
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
+import androidx.core.app.ActivityCompat
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.park_for_kids.data.model.OneParkViewModel
 import com.example.park_for_kids.network.PlaygroundResponse
-import android.webkit.WebView
-import android.webkit.WebViewClient
+import org.osmdroid.config.Configuration
+import org.osmdroid.views.MapView
+import org.osmdroid.util.GeoPoint
 import androidx.compose.ui.viewinterop.AndroidView
 
 @Composable
 fun PlaygroundDetailsScreen(navController: NavController, playgroundId: String, playground: PlaygroundResponse.Playground? = null) {
 
     val viewModel: OneParkViewModel = viewModel()
-    val playgroundState by viewModel.playground.collectAsState() // Renommé pour éviter la confusion
+    val playgroundState by viewModel.playground.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
+    val context = LocalContext.current
+
+    // Initialiser la configuration osmdroid
+    Configuration.getInstance().load(context, context.getSharedPreferences("osmdroid", 0))
 
     // Si playground n'est pas fourni, récupérer via l'API
     LaunchedEffect(playgroundId) {
@@ -48,9 +48,17 @@ fun PlaygroundDetailsScreen(navController: NavController, playgroundId: String, 
                 .align(Alignment.TopCenter)
                 .padding(16.dp)
                 .fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(16.dp) // Espace entre les éléments
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Spacer(modifier = Modifier.height(200.dp))  // Ajoute de l'espace au-dessus pour décaler la colonne
+            Text(
+                text = "ParKinfos",
+                style = MaterialTheme.typography.headlineMedium,
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(top = 32.dp, bottom = 16.dp) // Ajout de padding
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             when {
                 isLoading -> {
@@ -91,22 +99,39 @@ fun PlaygroundDetailsScreen(navController: NavController, playgroundId: String, 
                             "Horaires d'ouverture: ${park.opening_hours ?: "Non disponible"}",
                             style = MaterialTheme.typography.bodyMedium
                         )
-                        // Afficher la carte OSM si l'URL est disponible
-                        park.meta_osm_url?.let { osmUrl ->
-                            WebViewComponent(osmUrl)
+
+                        Spacer(modifier = Modifier.height(32.dp))
+
+                        // Afficher la carte OSM si les coordonnées sont disponibles
+                        park.meta_geo_point?.let { geoPoint ->
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp) // Ajouter du padding horizontal
+                                    .align(Alignment.CenterHorizontally) // Centrer horizontalement
+                            ) {
+                                // Utilisation des coordonnées géographiques du parc
+                                OsmMapComponent(latitude = geoPoint.lat, longitude = geoPoint.lon)
+                            }
                         }
                     }
                 }
             }
+        }
 
-            // Bouton "Retour" bien placé dans le Box
+        // Bouton retour en bas
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(16.dp)
+                .fillMaxWidth()
+                .height(48.dp)
+        ) {
             Button(
                 onClick = { navController.popBackStack() },
                 modifier = Modifier
-//                    .align(Alignment.BottomCenter)
-                    .padding(30.dp)
-                    .fillMaxWidth() // Remplir la largeur disponible
-                    .height(48.dp) // Hauteur standard du bouton
+                    .align(Alignment.Center)
+                    .fillMaxWidth()
             ) {
                 Text("Retour")
             }
@@ -114,46 +139,53 @@ fun PlaygroundDetailsScreen(navController: NavController, playgroundId: String, 
     }
 }
 
-    @Composable
-    fun WebViewComponent(url: String) {
-        AndroidView(
-            factory = { context ->
-                WebView(context).apply {
-                    settings.javaScriptEnabled = true
-                    webViewClient =
-                        WebViewClient() // Assure que les liens s'ouvrent dans la WebView
-                    loadUrl(url)
-                }
-            },
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(8.dp) // Ajoute du padding autour de la WebView
+@Composable
+fun OsmMapComponent(latitude: Double, longitude: Double) {
+    val context = LocalContext.current
+
+    // Vérification des permissions d'accès à la localisation
+    if (ActivityCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) != PackageManager.PERMISSION_GRANTED &&
+        ActivityCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        ) != PackageManager.PERMISSION_GRANTED
+    ) {
+        // Demande de permissions ici
+        ActivityCompat.requestPermissions(
+            (context as Activity),
+            arrayOf(
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ),
+            1
         )
+        return
     }
 
-    @Preview(showBackground = true)
-    @Composable
-    fun PlaygroundDetailsScreenPreview() {
-        // Simuler un objet Playground pour le Preview
-        val playground = PlaygroundResponse.Playground(
-            name = "Aire de jeux du Parc Central",
-            min_age = 3,
-            surface = null,
-            max_age = null,
-            opening_hours = "08:00 - 20:00",
-            meta_name_com = "Paris",
-            meta_name_dep = "Paris",
-            meta_code_dep = null,
-            meta_name_reg = "Île-de-France",
-            meta_code_reg = null,
-            meta_geo_point = null,
-            meta_osm_id = "1024276870",
-            meta_osm_url = null
-        )
+    // Création et configuration de la carte osmdroid
+    AndroidView(
+        factory = { ctx ->
+            val mapView = MapView(ctx)
+            mapView.setTileSource(org.osmdroid.tileprovider.tilesource.TileSourceFactory.MAPNIK)
+            mapView.controller.setZoom(19.0)
+            val startPoint = GeoPoint(latitude, longitude)
+            mapView.controller.setCenter(startPoint)
 
-        PlaygroundDetailsScreen(
-            navController = rememberNavController(),
-            playgroundId = "1024276870",
-            playground = playground
-        )
-    }
+            // Ajouter un marqueur à l'emplacement
+            val marker = org.osmdroid.views.overlay.Marker(mapView)
+            marker.position = startPoint
+            marker.icon = ctx.getDrawable(R.drawable.marker_icon) // Assurez-vous d'avoir un drawable pour l'icône du marqueur
+            marker.setAnchor(org.osmdroid.views.overlay.Marker.ANCHOR_CENTER, org.osmdroid.views.overlay.Marker.ANCHOR_BOTTOM)
+            mapView.overlays.add(marker)
+
+            mapView
+        },
+        modifier = Modifier
+            .fillMaxWidth() // Utiliser toute la largeur disponible
+            .aspectRatio(1f) // Carte carrée
+            .padding(bottom = 96.dp) // Espace pour ne pas chevaucher le bouton et les informations
+    )
+}
