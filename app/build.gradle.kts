@@ -77,7 +77,11 @@ dependencies {
 //    val nav_version = "2.7.7"
     implementation(libs.androidx.navigation.compose)
 
-    // Pour avoir accès à la map OSM
-    implementation(libs.androidx.webkit)
+    // Pour avoir accès à la map OSM avec WebView
+    //implementation(libs.androidx.webkit)
+
+    // Pour alternative à solution précédente
+    implementation(libs.osmdroid.android)
+
 
 }
