@@ -45,7 +45,6 @@ fun PlaygroundDetailsScreen(navController: NavController, playgroundId: String, 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
-                .align(Alignment.TopCenter)
                 .padding(16.dp)
                 .fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -55,65 +54,48 @@ fun PlaygroundDetailsScreen(navController: NavController, playgroundId: String, 
                 style = MaterialTheme.typography.headlineMedium,
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
-                    .padding(top = 32.dp, bottom = 16.dp) // Ajout de padding
+                    .padding(top = 32.dp, bottom = 16.dp)
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            // Affichage des détails du parc
+            currentPlayground?.let { park ->
+                Text(
+                    "Nom: ${park.name ?: "Non disponible"}",
+                    style = MaterialTheme.typography.bodyLarge
+                )
+                Text(
+                    "Ville: ${park.meta_name_com}",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Text(
+                    "Département: ${park.meta_name_dep}",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Text(
+                    "Région: ${park.meta_name_reg}",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Text(
+                    "Age minimum: ${park.min_age ?: "Non disponible"}",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Text(
+                    "Horaires d'ouverture: ${park.opening_hours ?: "Non disponible"}",
+                    style = MaterialTheme.typography.bodyMedium
+                )
 
-            when {
-                isLoading -> {
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
-                }
+                // Spacer avec une hauteur fixe après les horaires d'ouverture
+                Spacer(modifier = Modifier.height(32.dp))
 
-                errorMessage != null -> {
-                    Text(
-                        "Erreur: $errorMessage",
-                        color = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.align(Alignment.CenterHorizontally)
-                    )
-                }
-
-                else -> {
-                    currentPlayground?.let { park ->
-                        Text(
-                            "Nom: ${park.name ?: "Non disponible"}",
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                        Text(
-                            "Ville: ${park.meta_name_com}",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                        Text(
-                            "Département: ${park.meta_name_dep}",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                        Text(
-                            "Région: ${park.meta_name_reg}",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                        Text(
-                            "Age minimum: ${park.min_age ?: "Non disponible"}",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                        Text(
-                            "Horaires d'ouverture: ${park.opening_hours ?: "Non disponible"}",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-
-                        Spacer(modifier = Modifier.height(32.dp))
-
-                        // Afficher la carte OSM si les coordonnées sont disponibles
-                        park.meta_geo_point?.let { geoPoint ->
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 16.dp) // Ajouter du padding horizontal
-                                    .align(Alignment.CenterHorizontally) // Centrer horizontalement
-                            ) {
-                                // Utilisation des coordonnées géographiques du parc
-                                OsmMapComponent(latitude = geoPoint.lat, longitude = geoPoint.lon)
-                            }
-                        }
+                // Affichage de la carte
+                park.meta_geo_point?.let { geoPoint ->
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(300.dp)
+                            .align(Alignment.CenterHorizontally)
+                    ) {
+                        OsmMapComponent(latitude = geoPoint.lat, longitude = geoPoint.lon)
                     }
                 }
             }
@@ -177,15 +159,14 @@ fun OsmMapComponent(latitude: Double, longitude: Double) {
             // Ajouter un marqueur à l'emplacement
             val marker = org.osmdroid.views.overlay.Marker(mapView)
             marker.position = startPoint
-            marker.icon = ctx.getDrawable(R.drawable.marker_icon) // Assurez-vous d'avoir un drawable pour l'icône du marqueur
+            marker.icon = ctx.getDrawable(R.drawable.marker_icon)
             marker.setAnchor(org.osmdroid.views.overlay.Marker.ANCHOR_CENTER, org.osmdroid.views.overlay.Marker.ANCHOR_BOTTOM)
             mapView.overlays.add(marker)
 
             mapView
         },
         modifier = Modifier
-            .fillMaxWidth() // Utiliser toute la largeur disponible
-            .aspectRatio(1f) // Carte carrée
-            .padding(bottom = 96.dp) // Espace pour ne pas chevaucher le bouton et les informations
+            .fillMaxWidth() // Prendre toute la largeur disponible
+            .height(300.dp) // Taille fixe pour la carte
     )
 }
