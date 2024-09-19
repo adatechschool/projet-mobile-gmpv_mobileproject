@@ -82,7 +82,7 @@ fun Home(navController: NavController){
             // Afficher le nombre total de parcs
             if (totalCount != null) {
                 Text(
-                    "Nombre total de parcs : $totalCount",
+                    "Nombre total de parcs à $searchQuery : $totalCount",
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Bold,)
             }
